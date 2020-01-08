@@ -15,6 +15,11 @@ class QComboBox;
 
 class SiSpinBox;
 
+#ifdef QWT
+//#include <qwt_knob.h>
+#include <logknob.h>
+#endif
+
 struct DsoSettingsScope;
 
 Q_DECLARE_METATYPE(std::vector<unsigned>)
@@ -70,9 +75,17 @@ class HorizontalDock : public QDockWidget {
     QLabel *frequencybaseLabel;        ///< The label for the frequencybase spinbox
     QLabel *recordLengthLabel;         ///< The label for the record length combobox
     QLabel *formatLabel;               ///< The label for the format combobox
-    SiSpinBox *samplerateSiSpinBox;    ///< Selects the samplerate for aquisitions
-    SiSpinBox *timebaseSiSpinBox;      ///< Selects the timebase for voltage graphs
-    SiSpinBox *frequencybaseSiSpinBox; ///< Selects the frequencybase for spectrum graphs
+
+    #ifdef QWT
+        SiSpinBox *samplerateSiSpinBox;    ///< Selects the samplerate for aquisitions
+        LogKnob *samplerateLogKnob; ///< Selects the samplerate for aquisitions
+        LogKnob *timebaseKnob; ///< Selects the timebase for voltage graphs
+        LogKnob *frequencybaseKnob; ///< Selects the frequencybase for spectrum graphs
+    #else
+        SiSpinBox *samplerateSiSpinBox;    ///< Selects the samplerate for aquisitions
+        SiSpinBox *timebaseSiSpinBox;      ///< Selects the timebase for voltage graphs
+        SiSpinBox *frequencybaseSiSpinBox; ///< Selects the frequencybase for spectrum graphs
+    #endif
     QComboBox *recordLengthComboBox;   ///< Selects the record length for aquisitions
     QComboBox *formatComboBox;         ///< Selects the way the sampled data is
                                        /// interpreted and shown

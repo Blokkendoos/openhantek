@@ -42,55 +42,110 @@ VoltageDock::VoltageDock(DsoSettingsScope *scope, const Dso::ControlSpecificatio
     dockLayout->setColumnStretch(1, 1);
 
     // Initialize elements
-    for (ChannelID channel = 0; channel < scope->voltage.size(); ++channel) {
-        ChannelBlock b;
+    #ifdef QWT
+        for (ChannelID channel = 0; channel < scope->voltage.size(); ++channel) {
+            ChannelBlock b;
 
-        b.miscComboBox=(new QComboBox());
-        b.gainComboBox=(new QComboBox());
-        b.invertCheckBox=(new QCheckBox(tr("Invert")));
-        b.usedCheckBox=(new QCheckBox(scope->voltage[channel].name));
+            b.miscComboBox=(new QComboBox());
+            b.gainKnob=(new LogKnob(Helper::UNIT_VOLTS));
+            b.invertCheckBox=(new QCheckBox(tr("Invert")));
+            b.usedCheckBox=(new QCheckBox(scope->voltage[channel].name));
 
-        channelBlocks.push_back(std::move(b));
+            channelBlocks.push_back(std::move(b));
 
-        if (channel < spec->channels)
-            b.miscComboBox->addItems(couplingStrings);
-        else
-            b.miscComboBox->addItems(modeStrings);
+            if (channel < spec->channels)
+                b.miscComboBox->addItems(couplingStrings);
+            else
+                b.miscComboBox->addItems(modeStrings);
 
-        b.gainComboBox->addItems(gainStrings);
+            b.gainKnob->setRange( 1e-2, 5e0 );
+            b.gainKnob->setScaleMaxMinor( 2 );
+            b.gainKnob->setTickLabels( SiScale::MajorAndMinorTicks );
 
-        dockLayout->addWidget(b.usedCheckBox, (int)channel * 3, 0);
-        dockLayout->addWidget(b.gainComboBox, (int)channel * 3, 1);
-        dockLayout->addWidget(b.miscComboBox, (int)channel * 3 + 1, 1);
-        dockLayout->addWidget(b.invertCheckBox, (int)channel * 3 + 2, 1);
+            dockLayout->addWidget(b.usedCheckBox, (int)channel * 3, 0);
+            dockLayout->addWidget(b.invertCheckBox, (int)channel * 3, 1);
+            dockLayout->addWidget(b.miscComboBox, (int)channel * 3 + 1, 0);
+            dockLayout->addWidget(b.gainKnob, (int)channel * 3 + 1, 1);
 
-        if (channel < spec->channels)
-            setCoupling(channel, scope->voltage[channel].couplingOrMathIndex);
-        else
-            setMode(scope->voltage[channel].couplingOrMathIndex);
-        setGain(channel, scope->voltage[channel].gainStepIndex);
-        setUsed(channel, scope->voltage[channel].used);
+            if (channel < spec->channels)
+                setCoupling(channel, scope->voltage[channel].couplingOrMathIndex);
+            else
+                setMode(scope->voltage[channel].couplingOrMathIndex);
 
-        connect(b.gainComboBox, SELECT<int>::OVERLOAD_OF(&QComboBox::currentIndexChanged), [this,channel](int index) {
-            this->scope->voltage[channel].gainStepIndex = (unsigned)index;
-            emit gainChanged(channel, this->scope->gain(channel));
-        });
-        connect(b.invertCheckBox, &QAbstractButton::toggled, [this,channel](bool checked) {
-            this->scope->voltage[channel].inverted = checked;
-        });
-        connect(b.miscComboBox, SELECT<int>::OVERLOAD_OF(&QComboBox::currentIndexChanged), [this,channel,spec,scope](int index){
-            this->scope->voltage[channel].couplingOrMathIndex = (unsigned)index;
-            if (channel < spec->channels) {
-                emit couplingChanged(channel, scope->coupling(channel, spec));
-            } else {
-                emit modeChanged(Dso::getMathMode(this->scope->voltage[channel]));
-            }
-        });
-        connect(b.usedCheckBox, &QAbstractButton::toggled, [this,channel](bool checked) {
-            this->scope->voltage[channel].used = checked;
-            emit usedChanged(channel, checked);
-        });
-    }
+            setGain(channel, scope->voltage[channel].gainStepIndex);
+            setUsed(channel, scope->voltage[channel].used);
+
+            connect(b.gainKnob, SELECT<double>::OVERLOAD_OF(&LogKnob::valueChanged), [this,channel](int index) {
+                this->scope->voltage[channel].gainStepIndex = (unsigned)index;
+                emit gainChanged(channel, this->scope->gain(channel));
+            });
+            connect(b.invertCheckBox, &QAbstractButton::toggled, [this,channel](bool checked) {
+                this->scope->voltage[channel].inverted = checked;
+            });
+            connect(b.miscComboBox, SELECT<int>::OVERLOAD_OF(&QComboBox::currentIndexChanged), [this,channel,spec,scope](int index){
+                this->scope->voltage[channel].couplingOrMathIndex = (unsigned)index;
+                if (channel < spec->channels) {
+                    emit couplingChanged(channel, scope->coupling(channel, spec));
+                } else {
+                    emit modeChanged(Dso::getMathMode(this->scope->voltage[channel]));
+                }
+            });
+            connect(b.usedCheckBox, &QAbstractButton::toggled, [this,channel](bool checked) {
+                this->scope->voltage[channel].used = checked;
+                emit usedChanged(channel, checked);
+            });
+        }
+    #else
+        for (ChannelID channel = 0; channel < scope->voltage.size(); ++channel) {
+            ChannelBlock b;
+
+            b.miscComboBox=(new QComboBox());
+            b.gainComboBox=(new QComboBox());
+            b.invertCheckBox=(new QCheckBox(tr("Invert")));
+            b.usedCheckBox=(new QCheckBox(scope->voltage[channel].name));
+
+            channelBlocks.push_back(std::move(b));
+
+            if (channel < spec->channels)
+                b.miscComboBox->addItems(couplingStrings);
+            else
+                b.miscComboBox->addItems(modeStrings);
+
+            b.gainComboBox->addItems(gainStrings);
+
+            dockLayout->addWidget(b.usedCheckBox, (int)channel * 3, 0);
+            dockLayout->addWidget(b.gainComboBox, (int)channel * 3, 1);
+            dockLayout->addWidget(b.miscComboBox, (int)channel * 3 + 1, 1);
+            dockLayout->addWidget(b.invertCheckBox, (int)channel * 3 + 2, 1);
+
+            if (channel < spec->channels)
+                setCoupling(channel, scope->voltage[channel].couplingOrMathIndex);
+            else
+                setMode(scope->voltage[channel].couplingOrMathIndex);
+            setGain(channel, scope->voltage[channel].gainStepIndex);
+            setUsed(channel, scope->voltage[channel].used);
+
+            connect(b.gainComboBox, SELECT<int>::OVERLOAD_OF(&QComboBox::currentIndexChanged), [this,channel](int index) {
+                this->scope->voltage[channel].gainStepIndex = (unsigned)index;
+                emit gainChanged(channel, this->scope->gain(channel));
+            });
+            connect(b.invertCheckBox, &QAbstractButton::toggled, [this,channel](bool checked) {
+                this->scope->voltage[channel].inverted = checked;
+            });
+            connect(b.miscComboBox, SELECT<int>::OVERLOAD_OF(&QComboBox::currentIndexChanged), [this,channel,spec,scope](int index){
+                this->scope->voltage[channel].couplingOrMathIndex = (unsigned)index;
+                if (channel < spec->channels) {
+                    emit couplingChanged(channel, scope->coupling(channel, spec));
+                } else {
+                    emit modeChanged(Dso::getMathMode(this->scope->voltage[channel]));
+                }
+            });
+            connect(b.usedCheckBox, &QAbstractButton::toggled, [this,channel](bool checked) {
+                this->scope->voltage[channel].used = checked;
+                emit usedChanged(channel, checked);
+            });
+        }
+    #endif
 
     dockWidget = new QWidget();
     SetupDockWidget(this, dockWidget, dockLayout);
@@ -113,8 +168,13 @@ void VoltageDock::setCoupling(ChannelID channel, unsigned couplingIndex) {
 void VoltageDock::setGain(ChannelID channel, unsigned gainStepIndex) {
     if (channel >= scope->voltage.size()) return;
     if (gainStepIndex >= scope->gainSteps.size()) return;
-    QSignalBlocker blocker(channelBlocks[channel].gainComboBox);
-    channelBlocks[channel].gainComboBox->setCurrentIndex((unsigned)gainStepIndex);
+    #ifdef QWT
+        QSignalBlocker blocker(channelBlocks[channel].gainKnob);
+        channelBlocks[channel].gainKnob->setValue((unsigned)gainStepIndex);
+    #else
+        QSignalBlocker blocker(channelBlocks[channel].gainComboBox);
+        channelBlocks[channel].gainComboBox->setCurrentIndex((unsigned)gainStepIndex);
+    #endif
 }
 
 void VoltageDock::setMode(unsigned mathModeIndex) {

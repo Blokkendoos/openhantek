@@ -34,18 +34,35 @@ HorizontalDock::HorizontalDock(DsoSettingsScope *scope, QWidget *parent, Qt::Win
     this->samplerateSiSpinBox->setMaximum(1e8);
     this->samplerateSiSpinBox->setUnitPostfix("/s");
 
-    timebaseSteps << 1.0 << 2.0 << 4.0 << 10.0;
+    #ifdef QWT
+        this->timebaseKnob = new LogKnob(Helper::UNIT_SECONDS, QString(tr("Timebase")));
+        this->timebaseKnob->setRange( 0.5e-9, 1e3 );
+        this->timebaseKnob->setKnobWidth( 75 );
+        this->timebaseKnob->setBorderWidth( 3 );
+        #ifdef QWT60
+            this->timebaseKnob->setKnobStyle( QwtKnob::Raised );
+            this->timebaseKnob->setMarkerStyle( QwtKnob::Notch );
+        #endif
+    #else
+        timebaseSteps << 1.0 << 2.0 << 4.0 << 10.0;
+        this->timebaseLabel = new QLabel(tr("Timebase"));
+        this->timebaseSiSpinBox = new SiSpinBox(UNIT_SECONDS);
+        this->timebaseSiSpinBox->setSteps(timebaseSteps);
+        this->timebaseSiSpinBox->setMinimum(1e-9);
+        this->timebaseSiSpinBox->setMaximum(3.6e3);
+    #endif
 
-    this->timebaseLabel = new QLabel(tr("Timebase"));
-    this->timebaseSiSpinBox = new SiSpinBox(UNIT_SECONDS);
-    this->timebaseSiSpinBox->setSteps(timebaseSteps);
-    this->timebaseSiSpinBox->setMinimum(1e-9);
-    this->timebaseSiSpinBox->setMaximum(3.6e3);
-
-    this->frequencybaseLabel = new QLabel(tr("Frequencybase"));
-    this->frequencybaseSiSpinBox = new SiSpinBox(UNIT_HERTZ);
-    this->frequencybaseSiSpinBox->setMinimum(1.0);
-    this->frequencybaseSiSpinBox->setMaximum(100e6);
+    #ifdef QWT
+        this->frequencybaseKnob = new LogKnob(Helper::UNIT_HERTZ, QString(tr("Frequencybase")));
+        this->frequencybaseKnob->setRange( 1.0, 100e6);
+        this->frequencybaseKnob->setKnobWidth( 75 );
+        this->frequencybaseKnob->setBorderWidth( 3 );
+    #else
+        this->frequencybaseLabel = new QLabel(tr("Frequencybase"));
+        this->frequencybaseSiSpinBox = new SiSpinBox(UNIT_HERTZ);
+        this->frequencybaseSiSpinBox->setMinimum(1.0);
+        this->frequencybaseSiSpinBox->setMaximum(100e6);
+    #endif
 
     this->recordLengthLabel = new QLabel(tr("Record length"));
     this->recordLengthComboBox = new QComboBox();
@@ -60,10 +77,17 @@ HorizontalDock::HorizontalDock(DsoSettingsScope *scope, QWidget *parent, Qt::Win
     this->dockLayout->setColumnStretch(1, 1);
     this->dockLayout->addWidget(this->samplerateLabel, 0, 0);
     this->dockLayout->addWidget(this->samplerateSiSpinBox, 0, 1);
-    this->dockLayout->addWidget(this->timebaseLabel, 1, 0);
-    this->dockLayout->addWidget(this->timebaseSiSpinBox, 1, 1);
-    this->dockLayout->addWidget(this->frequencybaseLabel, 2, 0);
-    this->dockLayout->addWidget(this->frequencybaseSiSpinBox, 2, 1);
+
+    #ifdef QWT
+        this->dockLayout->addWidget(this->timebaseKnob, 2, 0);
+        this->dockLayout->addWidget(this->frequencybaseKnob, 2, 1);
+    #else
+        this->dockLayout->addWidget(this->timebaseLabel, 1, 0);
+        this->dockLayout->addWidget(this->timebaseSiSpinBox, 1, 1);
+        this->dockLayout->addWidget(this->frequencybaseLabel, 2, 0);
+        this->dockLayout->addWidget(this->frequencybaseSiSpinBox, 2, 1);
+    #endif
+
     this->dockLayout->addWidget(this->recordLengthLabel, 3, 0);
     this->dockLayout->addWidget(this->recordLengthComboBox, 3, 1);
     this->dockLayout->addWidget(this->formatLabel, 4, 0);
@@ -74,8 +98,14 @@ HorizontalDock::HorizontalDock(DsoSettingsScope *scope, QWidget *parent, Qt::Win
 
     // Connect signals and slots
     connect(this->samplerateSiSpinBox, SELECT<double>::OVERLOAD_OF(&QDoubleSpinBox::valueChanged), this, &HorizontalDock::samplerateSelected);
-    connect(this->timebaseSiSpinBox, SELECT<double>::OVERLOAD_OF(&QDoubleSpinBox::valueChanged), this, &HorizontalDock::timebaseSelected);
-    connect(this->frequencybaseSiSpinBox, SELECT<double>::OVERLOAD_OF(&QDoubleSpinBox::valueChanged), this, &HorizontalDock::frequencybaseSelected);
+
+    #ifdef QWT
+        connect( this->timebaseKnob, SIGNAL(valueChanged(double)), this, SLOT(timebaseSelected(double)));
+        connect( this->frequencybaseKnob, SIGNAL(valueChanged(double)), this, SLOT(frequencybaseSelected(double)));
+    #else
+        connect(this->timebaseSiSpinBox, SELECT<double>::OVERLOAD_OF(&QDoubleSpinBox::valueChanged), this, &HorizontalDock::timebaseSelected);
+        connect(this->frequencybaseSiSpinBox, SELECT<double>::OVERLOAD_OF(&QDoubleSpinBox::valueChanged), this, &HorizontalDock::frequencybaseSelected);
+    #endif
     connect(this->recordLengthComboBox, SELECT<int>::OVERLOAD_OF(&QComboBox::currentIndexChanged), this, &HorizontalDock::recordLengthSelected);
     connect(this->formatComboBox, SELECT<int>::OVERLOAD_OF(&QComboBox::currentIndexChanged), this, &HorizontalDock::formatSelected);
 
@@ -96,8 +126,13 @@ void HorizontalDock::closeEvent(QCloseEvent *event) {
 }
 
 void HorizontalDock::setFrequencybase(double frequencybase) {
-    QSignalBlocker blocker(frequencybaseSiSpinBox);
-    frequencybaseSiSpinBox->setValue(frequencybase);
+    #ifdef QWT
+        QSignalBlocker blocker(frequencybaseKnob);
+        frequencybaseKnob->setValue(frequencybase);
+    #else
+        QSignalBlocker blocker(frequencybaseSiSpinBox);
+        frequencybaseSiSpinBox->setValue(frequencybase);
+    #endif
 }
 
 void HorizontalDock::setSamplerate(double samplerate) {
@@ -106,17 +141,29 @@ void HorizontalDock::setSamplerate(double samplerate) {
 }
 
 double HorizontalDock::setTimebase(double timebase) {
-    QSignalBlocker blocker(timebaseSiSpinBox);
+    #ifdef QWT
+        QSignalBlocker blocker(timebaseKnob);
+    #else
+        QSignalBlocker blocker(timebaseSiSpinBox);
+    #endif
     // timebaseSteps are repeated in each decade
     double decade = pow(10, floor(log10(timebase)));
     double vNorm = timebase / decade;
     for (int i = 0; i < timebaseSteps.size() - 1; ++i) {
         if (timebaseSteps.at(i) <= vNorm && vNorm < timebaseSteps.at(i + 1)) {
-            timebaseSiSpinBox->setValue(decade * timebaseSteps.at(i));
+            #ifdef QWT
+                timebaseKnob->setValue(decade * timebaseSteps.at(i));
+            #else
+                timebaseSiSpinBox->setValue(decade * timebaseSteps.at(i));
+            #endif
             break;
         }
     }
-    return timebaseSiSpinBox->value();
+    #ifdef QWT
+	    return timebaseKnob->value();
+    #else
+	    return timebaseSiSpinBox->value();
+	#endif
 }
 
 int addRecordLength(QComboBox *recordLengthComboBox, unsigned recordLength) {
@@ -165,15 +212,23 @@ void HorizontalDock::setSamplerateLimits(double minimum, double maximum) {
 
 void HorizontalDock::setSamplerateSteps(int mode, QList<double> steps) {
     // Assume that method is invoked for fixed samplerate devices only
-    QSignalBlocker samplerateBlocker(samplerateSiSpinBox);
-    samplerateSiSpinBox->setMode(mode);
-    samplerateSiSpinBox->setSteps(steps);
-    samplerateSiSpinBox->setMinimum(steps.first());
-    samplerateSiSpinBox->setMaximum(steps.last());
-    // Make reasonable adjustments to the timebase spinbox
-    QSignalBlocker timebaseBlocker(timebaseSiSpinBox);
-    timebaseSiSpinBox->setMinimum(pow(10, floor(log10(1.0 / steps.last()))));
-    timebaseSiSpinBox->setMaximum(pow(10, ceil(log10(8192.0 / (steps.first() * 10)))));
+    #ifdef QWT
+        QSignalBlocker samplerateBlocker(samplerateLogKnob);
+        // Make reasonable adjustments to the timebase spinbox
+        timebaseKnob->setRange( pow(10, floor(log10(1.0 / steps.last()))), pow(10, ceil(log10(8192.0 / (steps.first() * 10)))));
+        timebaseKnob->setScaleMaxMinor( 2 );
+        timebaseKnob->setTickLabels( SiScale::MajorAndMinorTicks );
+    #else
+        QSignalBlocker samplerateBlocker(samplerateSiSpinBox);
+        samplerateSiSpinBox->setMode(mode);
+        samplerateSiSpinBox->setSteps(steps);
+        samplerateSiSpinBox->setMinimum(steps.first());
+        samplerateSiSpinBox->setMaximum(steps.last());
+        QSignalBlocker timebaseBlocker(timebaseSiSpinBox);
+        // Make reasonable adjustments to the timebase spinbox
+        timebaseSiSpinBox->setMinimum(pow(10, floor(log10(1.0 / steps.last()))));
+        timebaseSiSpinBox->setMaximum(pow(10, ceil(log10(8192.0 / (steps.first() * 10)))));
+    #endif
 }
 
 /// \brief Called when the frequencybase spinbox changes its value.

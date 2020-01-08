@@ -5,6 +5,11 @@
 #include <iostream>
 
 #include "usbdevice.h"
+#if LIBUSB_VERSION == 0
+#include <usb.h>
+#else
+#include <libusb-1.0/libusb.h>
+#endif
 
 #include "hantekdso/dsomodel.h"
 #include "hantekprotocol/bulkStructs.h"

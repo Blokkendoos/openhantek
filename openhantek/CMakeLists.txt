@@ -4,6 +4,12 @@ find_package(Qt5Widgets REQUIRED)
 find_package(Qt5PrintSupport REQUIRED)
 find_package(Qt5OpenGL REQUIRED)
 find_package(OpenGL)
+
+find_path(USB_INCLUDE_DIR "libusb.h" PATHS /opt/local/include/libusb-1.0)
+find_path(QWT_INCLUDE_DIR "qwt.h" PATHS /opt/local/libexec/qt5/lib/qwt.framework/Headers)
+#find_library(QWT_LIBRARY "qwt" PATHS "/opt/local/libexec/qt5/lib/qwt.framework" REQUIRED)
+set(QWT_LIBRARY /opt/local/libexec/qt5/lib/qwt.framework/qwt)
+
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
@@ -12,9 +18,12 @@ if (Qt5Widgets_VERSION VERSION_LESS 5.4.0)
     message(FATAL_ERROR "Minimum supported Qt5 version is 5.4.0!")
 endif()
 
+# Use QWT widgets
+add_definitions(-DQWT)
+
 # include directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
-include_directories(src/ src/hantekdso src/widgets src/docks src/configdialog)
+include_directories(src/ src/hantekdso src/widgets src/docks src/configdialog /opt/local/include ${USB_INCLUDE_DIR} ${QWT_INCLUDE_DIR})
 
 # collect sources and other files
 file(GLOB_RECURSE SRC "src/*.cpp")
@@ -36,7 +45,7 @@ endif()
 
 # make executable
 add_executable(${PROJECT_NAME} ${EXECTYPE} ${SRC} ${HEADERS} ${UI} ${QRC} ${TRANSLATION_BIN_FILES} ${TRANSLATION_QRC})
-target_link_libraries(${PROJECT_NAME} Qt5::Widgets Qt5::PrintSupport Qt5::OpenGL ${OPENGL_LIBRARIES} )
+target_link_libraries(${PROJECT_NAME} Qt5::Widgets Qt5::PrintSupport Qt5::OpenGL ${OPENGL_LIBRARIES} ${QWT_LIBRARY})
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_range_for)
 if(MSVC)
     target_compile_options(${PROJECT_NAME} PRIVATE "/W4" "/wd4251" "/wd4127" "/wd4275" "/wd4200" "/nologo" "/J" "/Zi")
