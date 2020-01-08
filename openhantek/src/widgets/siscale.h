@@ -32,7 +32,7 @@
 #include <qwt_text.h>
 #include <qwt_round_scale_draw.h>
 
-#include "helper.h"
+#include "utils/printutils.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -54,10 +54,10 @@ class SiScale: public QwtRoundScaleDraw
 			MajorAndMinorTicks
 		};
 		
-		SiScale(Helper::Unit unit);
+		SiScale(Unit unit);
 
 		virtual QwtText label(double val) const;
-		bool setUnit(Helper::Unit unit);
+		bool setUnit(Unit unit);
 
 		void setTickLabels( SiScale::TickLabels ticklabels);
 		SiScale::TickLabels tickLabels() const;
@@ -65,7 +65,7 @@ class SiScale: public QwtRoundScaleDraw
 	private:
 		void draw(QPainter *painter, const QPalette& palette) const;
 		
-		Helper::Unit unit; ///< The SI unit used for this knob
+		Unit unit; ///< The SI unit used for this knob
 		QString unitPostfix; ///< Shown after the unit
 		SiScale::TickLabels ticklabels;
 

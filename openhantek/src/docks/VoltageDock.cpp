@@ -47,7 +47,7 @@ VoltageDock::VoltageDock(DsoSettingsScope *scope, const Dso::ControlSpecificatio
             ChannelBlock b;
 
             b.miscComboBox=(new QComboBox());
-            b.gainKnob=(new LogKnob(Helper::UNIT_VOLTS));
+            b.gainKnob=(new LogKnob(UNIT_VOLTS));
             b.invertCheckBox=(new QCheckBox(tr("Invert")));
             b.usedCheckBox=(new QCheckBox(scope->voltage[channel].name));
 

@@ -35,7 +35,7 @@ HorizontalDock::HorizontalDock(DsoSettingsScope *scope, QWidget *parent, Qt::Win
     this->samplerateSiSpinBox->setUnitPostfix("/s");
 
     #ifdef QWT
-        this->timebaseKnob = new LogKnob(Helper::UNIT_SECONDS, QString(tr("Timebase")));
+        this->timebaseKnob = new LogKnob(UNIT_SECONDS, QString(tr("Timebase")));
         this->timebaseKnob->setRange( 0.5e-9, 1e3 );
         this->timebaseKnob->setKnobWidth( 75 );
         this->timebaseKnob->setBorderWidth( 3 );
@@ -53,7 +53,7 @@ HorizontalDock::HorizontalDock(DsoSettingsScope *scope, QWidget *parent, Qt::Win
     #endif
 
     #ifdef QWT
-        this->frequencybaseKnob = new LogKnob(Helper::UNIT_HERTZ, QString(tr("Frequencybase")));
+        this->frequencybaseKnob = new LogKnob(UNIT_HERTZ, QString(tr("Frequencybase")));
         this->frequencybaseKnob->setRange( 1.0, 100e6);
         this->frequencybaseKnob->setKnobWidth( 75 );
         this->frequencybaseKnob->setBorderWidth( 3 );

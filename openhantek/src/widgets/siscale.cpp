@@ -27,14 +27,14 @@
 #include <cmath>
 
 #include "siscale.h"
-#include "helper.h"
+#include "utils/printutils.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
 // class SiScale
 /// \brief Initializes the LogKnob internals.
 /// \param parent The parent widget.
-SiScale::SiScale(Helper::Unit unit) : QwtRoundScaleDraw() {
+SiScale::SiScale(Unit unit) : QwtRoundScaleDraw() {
 	this->setUnit( unit );
 	this->setTickLabels( SiScale::MajorTicks );
 }
@@ -44,14 +44,14 @@ SiScale::SiScale(Helper::Unit unit) : QwtRoundScaleDraw() {
 /// \param value the value for which the appropriate SI suffix
 /// \return String representation containing value and (prefix+)unit.
 QwtText SiScale::label(double val) const {
-	return Helper::valueToString(val, this->unit, 0) + this->unitPostfix;
+	return valueToString(val, this->unit, 0) + this->unitPostfix;
 }
 
 /// \brief Set the unit for this label.
 /// \param unit The unit shown for the value.
 /// \return true on success, false on invalid unit.
-bool SiScale::setUnit(Helper::Unit unit) {
-	if((unsigned int) unit >= Helper::UNIT_COUNT)
+bool SiScale::setUnit(Unit unit) {
+	if((unsigned int) unit >= UNIT_COUNT)
 		return false;	
 	this->unit = unit;
 	return true;

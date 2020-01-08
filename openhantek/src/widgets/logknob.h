@@ -39,7 +39,6 @@
 #include <qwt_round_scale_draw.h>
 #include <qwt_knob.h>
 
-#include "helper.h"
 #include "siscale.h"
 #include "myscaledraw.h"
 
@@ -54,24 +53,16 @@ class LogKnob: public QwtKnob
 	
 	public:
 		LogKnob(QWidget *parent = 0);
-		LogKnob(Helper::Unit unit, const QString &label=0, QWidget *parent=0);
+		LogKnob(Unit unit, const QString &label=0, QWidget *parent=0);
 		~LogKnob();
 		void setRange(double minR, double maxR);
 		void setSteps(QList<double> steps);
 		void setValue(double val);
-		bool setUnit(Helper::Unit unit);
+		bool setUnit(Unit unit);
 		QString textFromValue(double val) const;
 		void setLabel(const QString &label);
 		void setTickLabels(SiScale::TickLabels tl);
 		
-		// define dummy for these virtual methods (workaround "non-virtual thunk ..." error)
-// 	    void valueChange() {return;};
-// 		void rangeChange() {return;};
-// 		void scaleChange() {return;};
-// 		void fontChange(const QFont &oldFont) {return;};
-// 		void fitValue(double val) {return;};
-// 		void incValue(int steps) {return;};
-    		
     protected:
 		virtual void resizeEvent(QResizeEvent *event);
         
@@ -79,7 +70,7 @@ class LogKnob: public QwtKnob
 		void init();
 
 		QLabel *label; ///< The knob label
-		Helper::Unit unit; ///< The SI unit used for this knob
+		Unit unit; ///< The SI unit used for this knob
 		QString unitPostfix; ///< Shown after the unit
 		QList<double> steps; ///< The discrete value steps
 

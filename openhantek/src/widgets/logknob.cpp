@@ -26,6 +26,7 @@
 #include <cmath>
 
 #include "logknob.h"
+#include "utils/printutils.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -39,7 +40,7 @@ LogKnob::LogKnob(QWidget *parent) : QwtKnob(parent) {
 /// \brief Initializes the LogKnob, allowing the user to choose the unit.
 /// \param unit The SI unit used for the scale.
 /// \param parent The parent widget.
-LogKnob::LogKnob(Helper::Unit unit, const QString &label, QWidget *parent) : QwtKnob(parent) {
+LogKnob::LogKnob(Unit unit, const QString &label, QWidget *parent) : QwtKnob(parent) {
 	this->init();
 	this->setUnit(unit);
 	this->setLabel(label);
@@ -76,14 +77,14 @@ void LogKnob::setValue(double val) {
 /// \param val Value in base unit.
 /// \return String representation containing value and (prefix+)unit.
 QString LogKnob::textFromValue(double val) const {
-	return Helper::valueToString(val, this->unit, -1) + this->unitPostfix;
+	return valueToString(val, this->unit, -1) + this->unitPostfix;
 }
 
 /// \brief Set the unit for this knob.
 /// \param unit The unit shown for the knob value.
 /// \return true on success, false on invalid unit.
-bool LogKnob::setUnit(Helper::Unit unit) {
-	if((unsigned int) unit >= Helper::UNIT_COUNT)
+bool LogKnob::setUnit(Unit unit) {
+	if((unsigned int) unit >= UNIT_COUNT)
 		return false;	
 	this->unit = unit;
 //	this->scaleDraw()->setUnit(unit);
